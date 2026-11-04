@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>太麻里迎曙光｜太平洋日出親情旅記</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                        cute: ['Fredoka', '"Noto Sans TC"', 'sans-serif'],
+                    },
+                    colors: {
+                        dawn: {
+                            night: '#0B1021',
+                            deep: '#1B263B',
+                            purple: '#6930C3',
+                            pink: '#F72585',
+                            gold: '#FFB703',
+                            orange: '#FB8500',
+                            bright: '#FFF099'
+                        }
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+                            '50%': { opacity: '0.8', transform: 'scale(1.05)' },
+                        },
+                        twinkle: {
+                            '0%, 100%': { opacity: '0.2' },
+                            '50%': { opacity: '1' }
+                        }
+                    },
+                    animation: {
+                        float: 'float 4s ease-in-out infinite',
+                        pulseGlow: 'pulseGlow 3s ease-in-out infinite',
+                        twinkle: 'twinkle 2s ease-in-out infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar & aspect-ratio utilities */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1021;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6930c3;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #fb8500;
+        }
+
+        /* Enforce 16:9 Aspect Ratio on all photographic wrappers */
+        .photo-16-9-frame {
+            aspect-ratio: 16 / 9;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism styling */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .glass-panel-dark {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .text-gradient-gold {
+            background: linear-gradient(135deg, #FFB703 0%, #FB8500 50%, #F72585 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .badge-unlock-anim {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-[#0B1021] text-slate-100 font-sans antialiased selection:bg-amber-500 selection:text-white min-h-screen flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 w-full px-4 lg:px-8 py-3 transition-all duration-300 backdrop-blur-md bg-[#0B1021]/80 border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Brand / Title -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-pink-500 flex items-center justify-center text-xl shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
+                    🌅
+                </div>
+                <div>
+                    <h1 class="font-cute font-bold text-lg lg:text-xl tracking-tight text-white flex items-center gap-2">
+                        太麻里追光日誌 <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-normal">Taitung 2026</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">太平洋第一道曙光與家人的溫暖記憶</p>
+                </div>
+            </a>
+
+            <!-- Right Controls: Audio Visualizer Toggle & Navigation -->
+            <div class="flex items-center gap-3">
+                <!-- Web Audio Ocean Waves Sound Toggle -->
+                <button id="waveAudioBtn" onclick="toggleOceanWaveSound()" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-xs sm:text-sm font-medium text-amber-300 transition-all duration-300 shadow-sm active:scale-95">
+                    <span id="audioIcon" class="text-base">🌊</span>
+                    <span id="audioText">播放太平洋浪濤聲</span>
+                    <span id="audioWaveIndicator" class="hidden flex items-center gap-0.5 ml-1">
+                        <span class="w-1 h-3 bg-amber-400 rounded-full animate-pulse"></span>
+                        <span class="w-1 h-4 bg-amber-300 rounded-full animate-pulse delay-75"></span>
+                        <span class="w-1 h-2 bg-amber-500 rounded-full animate-pulse delay-150"></span>
+                    </span>
+                </button>
+
+                <!-- Navigation Links -->
+                <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+                    <a href="#simulator" class="hover:text-amber-400 transition-colors">曙光模擬器</a>
+                    <a href="#gallery" class="hover:text-amber-400 transition-colors">攝影展覽</a>
+                    <a href="#badges" class="hover:text-amber-400 transition-colors">旅行勳章</a>
+                    <a href="#postcard" class="hover:text-amber-400 transition-colors">明信片許願池</a>
+                </nav>
+
+                <!-- Quick Action: Like Button -->
+                <button id="mainLikeBtn" onclick="triggerHeartLike()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs sm:text-sm font-semibold transition-all active:scale-90">
+                    <span id="heartIcon" class="text-rose-400 text-sm">❤️</span>
+                    <span id="likeCount">128</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+
+        <!-- HERO SECTION: Cute Intro Banner -->
+        <section class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-slate-900 via-indigo-950/60 to-[#0B1021] border border-slate-800 p-8 sm:p-12 text-center">
+            <!-- Animated Background Light Orbs -->
+            <div class="absolute -top-24 -left-24 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute top-1/2 -right-24 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 max-w-3xl mx-auto space-y-6">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs sm:text-sm font-medium animate-float">
+                    <span>✨ 夏季特別版故事</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    <span>台東太麻里海岸線</span>
+                </div>
+
+                <h2 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                    夜風、浪音與穿透雲層的
+                    <span class="text-gradient-gold block mt-2">第一道金黃曙光</span>
+                </h2>
+
+                <p class="text-slate-300 text-base sm:text-lg font-normal leading-relaxed max-w-2xl mx-auto">
+                    今年暑假最深刻的記憶，是凌晨三點與家人踏著微涼夜風、佇立在太麻里海岸邊，親眼見證墨黑天空渲染為橙黃金光的震撼奇蹟。
+                </p>
+
+                <!-- Key Metrics / Highlights -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 max-w-2xl mx-auto">
+                    <div class="p-3 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-center">
+                        <div class="text-amber-400 text-lg font-bold font-display">03:00 AM</div>
+                        <div class="text-xs text-slate-400">夜行觀景台</div>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-center">
+                        <div class="text-purple-400 text-lg font-bold font-display">24.5°C</div>
+                        <div class="text-xs text-slate-400">夜風舒適度</div>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-center">
+                        <div class="text-pink-400 text-lg font-bold font-display">05:00 AM</div>
+                        <div class="text-xs text-slate-400">曙光染海平線</div>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-center">
+                        <div class="text-amber-300 text-lg font-bold font-display">100%</div>
+                        <div class="text-xs text-slate-400">家人溫暖回憶</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 1: Dynamic Sky & Sunrise Time Simulator -->
+        <section id="simulator" class="space-y-6 scroll-mt-24">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-amber-400 font-cute font-semibold text-sm">
+                        <span>🎛️ 互動體驗</span>
+                        <span>/ Interactive Sunrise Simulator</span>
+                    </div>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-white mt-1">太麻里日出天空模擬器</h3>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-400 max-w-md">
+                    拖拉下方時間軸滑桿，親自還原天空從凌晨暗夜漸變成金黃燦爛的全過程！
+                </p>
+            </div>
+
+            <!-- Simulator Container -->
+            <div class="rounded-3xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+                
+                <!-- Sky Visual Box (SVG + Animated Gradient Background) -->
+                <div id="skyCanvasBox" class="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden transition-all duration-1000 shadow-inner flex flex-col justify-between p-6 border border-white/10"
+                     style="background: linear-gradient(to bottom, #0B1021 0%, #151D33 60%, #1E2942 100%);">
+                    
+                    <!-- Celestial Bodies & Atmosphere Layers -->
+                    <!-- Stars layer (visible at 03:00 / 04:15) -->
+                    <div id="starsLayer" class="absolute inset-0 transition-opacity duration-1000 opacity-90 pointer-events-none">
+                        <div class="absolute top-8 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-twinkle"></div>
+                        <div class="absolute top-12 left-2/3 w-1 h-1 bg-amber-200 rounded-full animate-twinkle delay-100"></div>
+                        <div class="absolute top-20 left-1/3 w-2 h-2 bg-purple-200 rounded-full animate-twinkle delay-300"></div>
+                        <div class="absolute top-6 left-3/4 w-1.5 h-1.5 bg-blue-100 rounded-full animate-twinkle delay-500"></div>
+                        <div class="absolute top-16 left-1/5 w-1 h-1 bg-white rounded-full animate-twinkle delay-700"></div>
+                        <!-- Moon -->
+                        <div id="moonElem" class="absolute top-8 right-12 text-3xl opacity-80 transition-all duration-700">🌙</div>
+                    </div>
+
+                    <!-- Sun Element (SVG) -->
+                    <div id="sunContainer" class="absolute left-1/2 -translate-x-1/2 bottom-[-80px] transition-all duration-1000 flex flex-col items-center pointer-events-none">
+                        <div id="sunGlow" class="w-32 h-32 rounded-full bg-amber-400/30 blur-2xl transition-all duration-700"></div>
+                        <div id="sunCore" class="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-500 via-yellow-300 to-white shadow-[0_0_50px_rgba(251,133,0,0.8)] -mt-24 transition-all duration-700"></div>
+                    </div>
+
+                    <!-- Ocean Waves Vector Overlay -->
+                    <div class="absolute bottom-0 left-0 right-0 h-28 pointer-events-none z-10">
+                        <svg class="w-full h-full" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                            <path id="wavePathBack" fill="rgba(15, 23, 42, 0.6)" fill-opacity="1" d="M0,192L48,181.3C96,171,192,150,288,160C384,171,480,213,576,218.7C672,224,768,192,864,181.3C960,171,1056,181,1152,192C1248,203,1344,213,1392,218.7L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,0,320Z"></path>
+                            <path id="wavePathFront" fill="#0B1021" fill-opacity="0.9" d="M0,224L48,213.3C96,203,192,181,288,186.7C384,192,480,224,576,234.7C672,245,768,235,864,218.7C960,203,1056,181,1152,186.7C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,0,320Z"></path>
+                        </svg>
+                    </div>
+
+                    <!-- Floating Canvas Header Badge -->
+                    <div class="relative z-20 flex justify-between items-start">
+                        <span id="skyTimeDisplay" class="font-cute font-bold text-2xl sm:text-4xl text-white tracking-widest bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-2xl border border-white/20">
+                            03:00 AM
+                        </span>
+                        <span id="skyStageBadge" class="text-xs sm:text-sm font-medium px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-500/40 text-indigo-200">
+                            🌌 漆黑與寂靜夜行
+                        </span>
+                    </div>
+
+                    <!-- Reflection / Ocean Sound Note inside Sky box -->
+                    <div class="relative z-20 text-xs sm:text-sm text-slate-300 bg-slate-900/40 backdrop-blur-sm p-2.5 rounded-xl border border-white/10 max-w-max">
+                        💡 觀景台動態氣氛模擬中
+                    </div>
+                </div>
+
+                <!-- Time Range Controls -->
+                <div class="space-y-4 pt-2">
+                    <div class="flex items-center justify-between text-xs sm:text-sm text-slate-400 font-medium">
+                        <button onclick="setSimTime(0)" class="hover:text-amber-400 transition-colors">03:00 AM (夜行出發)</button>
+                        <button onclick="setSimTime(1)" class="hover:text-amber-400 transition-colors">04:15 AM (靜待浪音)</button>
+                        <button onclick="setSimTime(2)" class="hover:text-amber-400 transition-colors">05:00 AM (微光渲染)</button>
+                        <button onclick="setSimTime(3)" class="hover:text-amber-400 transition-colors">05:30 AM (金光穿雲)</button>
+                    </div>
+
+                    <!-- Range Input -->
+                    <input type="range" id="timeSlider" min="0" max="3" step="1" value="0" oninput="onSliderChange(this.value)"
+                           class="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50">
+                    
+                    <!-- Dynamic Text Narrative Card linked to Slider -->
+                    <div id="simulatorNarrative" class="glass-panel-dark rounded-2xl p-5 border border-slate-700/80 transition-all duration-500 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <div id="narrativeIcon" class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl shrink-0">
+                            🔦
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <h4 id="narrativeTitle" class="text-white font-bold text-lg">03:00 AM - 黑夜中的期待</h4>
+                                <span id="narrativeTag" class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">手電筒尋光</span>
+                            </div>
+                            <p id="narrativeText" class="text-slate-300 text-sm leading-relaxed">
+                                那天凌晨三點，四周還是一片漆黑與寂靜，我們帶著手電筒，頂著涼爽的夜風，一步步走向海岸線的觀景台。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 2: Photography Director Showcase & Story Chapters -->
+        <section id="gallery" class="space-y-10 scroll-mt-24">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold">
+                    <span>📷 攝影指導視角</span>
+                    <span>/ Photography Portfolio & Narrative</span>
+                </div>
+                <h3 class="text-3xl sm:text-4xl font-extrabold text-white">太麻里晨光細節紀錄</h3>
+                <p class="text-slate-400 text-sm">
+                    所有相片均嚴格採用 <span class="text-amber-400 font-mono font-semibold">16:9</span> 高畫質比例鑲嵌排版，紀錄大自然光影過渡的動人瞬間。
+                </p>
+            </div>
+
+            <!-- Chapter Cards Container -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                <!-- Card 1: 03:00 AM Midnight Trek -->
+                <div class="glass-panel-dark rounded-3xl p-6 space-y-5 border border-slate-800 hover:border-slate-700 transition-all duration-300 group">
+                    <!-- 16:9 Image Container -->
+                    <div class="photo-16-9-frame relative">
+                        <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop" 
+                             alt="太麻里 凌晨三點星空與海岸" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <!-- Photography Metadata Badge Overlay -->
+                        <div class="absolute bottom-3 left-3 right-3 bg-black/70 backdrop-blur-md px-3 py-2 rounded-xl text-xs text-slate-200 flex flex-wrap items-center justify-between gap-2 border border-white/10">
+                            <span class="font-mono text-amber-300 font-semibold">📸 Sony A7IV | 24mm f/2.0</span>
+                            <span class="font-mono text-slate-400">15s | ISO 3200 | 4500K</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-amber-400 tracking-wider font-display">CHAPTER 01</span>
+                            <span class="text-xs text-slate-400">📍 太麻里海岸觀景台</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">03:00 AM 寂靜夜風與尋光足跡</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            今年的暑假，最讓我難忘的是和家人一起去台東太麻里看日出的經歷。那天凌晨三點，四周還是一片漆黑與寂靜，我們帶著手電筒，頂著涼爽的夜風，一步步走向海岸線的觀景台。
+                        </p>
+                        <div class="flex flex-wrap gap-2 pt-2">
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#家庭旅行</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#夜行體驗</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#涼爽夜風</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: 04:15 AM Quiet Ocean Waves -->
+                <div class="glass-panel-dark rounded-3xl p-6 space-y-5 border border-slate-800 hover:border-slate-700 transition-all duration-300 group">
+                    <!-- 16:9 Image Container -->
+                    <div class="photo-16-9-frame relative">
+                        <img src="https://images.unsplash.com/photo-1439405326854-014607f694d7?q=80&w=1600&auto=format&fit=crop" 
+                             alt="拍打沙灘的海浪" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <!-- Photography Metadata Badge Overlay -->
+                        <div class="absolute bottom-3 left-3 right-3 bg-black/70 backdrop-blur-md px-3 py-2 rounded-xl text-xs text-slate-200 flex flex-wrap items-center justify-between gap-2 border border-white/10">
+                            <span class="font-mono text-amber-300 font-semibold">📸 Sony A7IV | 50mm f/2.8</span>
+                            <span class="font-mono text-slate-400">1/4s | ISO 1600 | Slow Shutter Wave</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-amber-400 tracking-wider font-display">CHAPTER 02</span>
+                            <span class="text-xs text-slate-400">🌊 太平洋沿岸沙灘</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">04:15 AM 沉穩律動的海浪韻律</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            海浪拍打著沙灘，發出規律且沉穩的聲音。我們靜靜地佇立在海岸邊，屏息等待著那一刻。在微涼潮氣中，聆聽大自然的呼吸聲。
+                        </p>
+                        <div class="flex flex-wrap gap-2 pt-2">
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#太平洋海音</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#屏息等待</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#沉穩海浪</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: 05:00 AM Dawn Spectrum -->
+                <div class="glass-panel-dark rounded-3xl p-6 space-y-5 border border-slate-800 hover:border-slate-700 transition-all duration-300 group">
+                    <!-- 16:9 Image Container -->
+                    <div class="photo-16-9-frame relative">
+                        <img src="https://images.unsplash.com/photo-1495954484750-af469f2f9be5?q=80&w=1600&auto=format&fit=crop" 
+                             alt="海平線曙光漸變天空" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <!-- Photography Metadata Badge Overlay -->
+                        <div class="absolute bottom-3 left-3 right-3 bg-black/70 backdrop-blur-md px-3 py-2 rounded-xl text-xs text-slate-200 flex flex-wrap items-center justify-between gap-2 border border-white/10">
+                            <span class="font-mono text-amber-300 font-semibold">📸 Sony A7IV | 35mm f/4.0</span>
+                            <span class="font-mono text-slate-400">1/60s | ISO 400 | Twilight Gradient</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-amber-400 tracking-wider font-display">CHAPTER 03</span>
+                            <span class="text-xs text-slate-400">🌅 天空漸層過渡</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">05:00 AM 墨黑渲染至耀眼橙黃</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            大約到了五點，遠方的海平線開始出現一絲微弱的曙光，原本墨黑的天空漸漸渲染成深藍、紫紅，最後轉為耀眼的橙黃色。
+                        </p>
+                        <div class="flex flex-wrap gap-2 pt-2">
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#海平線曙光</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#紫紅天空</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#橙黃大自然調色</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: 05:30 AM Golden Pacific Breakthrough -->
+                <div class="glass-panel-dark rounded-3xl p-6 space-y-5 border border-slate-800 hover:border-slate-700 transition-all duration-300 group">
+                    <!-- 16:9 Image Container -->
+                    <div class="photo-16-9-frame relative">
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop" 
+                             alt="金黃光芒穿透雲層照亮太平洋" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <!-- Photography Metadata Badge Overlay -->
+                        <div class="absolute bottom-3 left-3 right-3 bg-black/70 backdrop-blur-md px-3 py-2 rounded-xl text-xs text-slate-200 flex flex-wrap items-center justify-between gap-2 border border-white/10">
+                            <span class="font-mono text-amber-300 font-semibold">📸 Sony A7IV | 70mm f/8.0</span>
+                            <span class="font-mono text-slate-400">1/500s | ISO 100 | Golden Ray Burst</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-amber-400 tracking-wider font-display">CHAPTER 04</span>
+                            <span class="text-xs text-slate-400">✨ 壯麗太平洋金光</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">05:30 AM 煩惱消散與無價親情</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            當一道金黃色的光芒瞬間穿透雲層，整座太平洋與海岸線頓時被照得閃閃發光。那一刻的壯麗與寧靜，深深震撼了我的心靈，彷彿所有的煩惱與疲憊都在晨光中煙消雲散。這次經歷不僅讓我領略到大自然的無窮魅力，也讓我珍惜與家人共同度過的每一個美好瞬間。
+                        </p>
+                        <div class="flex flex-wrap gap-2 pt-2">
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#穿透雲層</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#閃閃發光</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#心靈震撼</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-400 text-xs">#珍視家人</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- SECTION 3: Travel Badges & Interactive Memory Capsule -->
+        <section id="badges" class="space-y-8 scroll-mt-24">
+            <div class="text-center max-w-xl mx-auto space-y-2">
+                <div class="text-amber-400 font-cute font-semibold text-sm">🏅 旅人榮譽成就</div>
+                <h3 class="text-3xl font-bold text-white">解鎖你的太麻里追光勳章</h3>
+                <p class="text-slate-400 text-xs sm:text-sm">點擊下方成就卡片，點亮專屬於這次台東日出之旅的里程碑！</p>
+            </div>
+
+            <!-- Badges Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                
+                <!-- Badge 1 -->
+                <div id="badge-1" onclick="unlockBadge('badge-1')" class="glass-panel-dark rounded-2xl p-5 border border-slate-800 hover:border-amber-500/50 text-center space-y-3 cursor-pointer transition-all duration-300 active:scale-95 group">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                        🌅
+                    </div>
+                    <div>
+                        <h5 class="text-white font-bold text-base">太麻里追光勇者</h5>
+                        <p class="text-slate-400 text-xs mt-1">親眼目睹太平洋曙光</p>
+                    </div>
+                    <span class="badge-status inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">
+                        [ 點擊解鎖 ]
+                    </span>
+                </div>
+
+                <!-- Badge 2 -->
+                <div id="badge-2" onclick="unlockBadge('badge-2')" class="glass-panel-dark rounded-2xl p-5 border border-slate-800 hover:border-purple-500/50 text-center space-y-3 cursor-pointer transition-all duration-300 active:scale-95 group">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                        🌌
+                    </div>
+                    <div>
+                        <h5 class="text-white font-bold text-base">3:00 AM 夜行足跡</h5>
+                        <p class="text-slate-400 text-xs mt-1">頂著夜風手電筒探索</p>
+                    </div>
+                    <span class="badge-status inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">
+                        [ 點擊解鎖 ]
+                    </span>
+                </div>
+
+                <!-- Badge 3 -->
+                <div id="badge-3" onclick="unlockBadge('badge-3')" class="glass-panel-dark rounded-2xl p-5 border border-slate-800 hover:border-blue-500/50 text-center space-y-3 cursor-pointer transition-all duration-300 active:scale-95 group">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                        🌊
+                    </div>
+                    <div>
+                        <h5 class="text-white font-bold text-base">太平洋浪音集郵</h5>
+                        <p class="text-slate-400 text-xs mt-1">聆聽沉穩規律海浪聲</p>
+                    </div>
+                    <span class="badge-status inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">
+                        [ 點擊解鎖 ]
+                    </span>
+                </div>
+
+                <!-- Badge 4 -->
+                <div id="badge-4" onclick="unlockBadge('badge-4')" class="glass-panel-dark rounded-2xl p-5 border border-slate-800 hover:border-rose-500/50 text-center space-y-3 cursor-pointer transition-all duration-300 active:scale-95 group">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                        👨‍👩‍👧‍👦
+                    </div>
+                    <div>
+                        <h5 class="text-white font-bold text-base">家人時光無價</h5>
+                        <p class="text-slate-400 text-xs mt-1">共享暖心震撼美好 لحظ</p>
+                    </div>
+                    <span class="badge-status inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">
+                        [ 點擊解鎖 ]
+                    </span>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- SECTION 4: Interactive Travel Postcard Generator Modal Trigger -->
+        <section id="postcard" class="rounded-3xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-indigo-500/10 border border-amber-500/30 p-8 sm:p-12 text-center space-y-6 relative overflow-hidden">
+            <div class="max-w-2xl mx-auto space-y-4 relative z-10">
+                <span class="text-4xl">✉️</span>
+                <h3 class="text-3xl font-extrabold text-white">太麻里日出明信片許願池</h3>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    想將太平洋第一道曙光的感動寄給珍視的人嗎？輸入祝福話語，生成專屬於你的 16:9 擬真紀念明信片！
+                </p>
+
+                <button onclick="openPostcardModal()" class="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-base shadow-xl shadow-amber-500/25 transition-all duration-300 hover:scale-105 active:scale-95">
+                    ✨ 製作我的日出明信片
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- POSTCARD MODAL -->
+    <div id="postcardModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass-panel-dark w-full max-w-3xl rounded-3xl p-6 sm:p-8 space-y-6 border border-slate-700 max-h-[90vh] overflow-y-auto">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h4 class="text-xl font-bold text-white flex items-center gap-2">
+                    <span>💌 製作專屬曙光明信片</span>
+                </h4>
+                <button onclick="closePostcardModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Inputs Form -->
+                <div class="space-y-4 text-left">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">寄件人 / 旅人姓名</label>
+                        <input type="text" id="pcAuthor" value="追光旅人" oninput="updatePostcardPreview()"
+                               class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">感言或祝福內容</label>
+                        <textarea id="pcMessage" rows="3" oninput="updatePostcardPreview()"
+                                  class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-amber-400">當金黃光芒穿透雲層，太平洋與海岸線閃閃發光。願煩惱煙消雲散，珍視與家人的每一個美好瞬間！</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">選擇相片主題</label>
+                        <select id="pcTheme" onchange="updatePostcardPreview()" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-amber-400">
+                            <option value="golden">05:30 AM 金黃雲層光束</option>
+                            <option value="dawn">05:00 AM 曙光渲染紫紅</option>
+                            <option value="night">03:00 AM 夜行寂靜海岸</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 16:9 Postcard Real-time Preview Canvas -->
+                <div class="space-y-2">
+                    <label class="block text-xs text-slate-400">16:9 明信片即時預覽</label>
+                    <div id="postcardRenderArea" class="photo-16-9-frame relative p-4 flex flex-col justify-between shadow-2xl border border-white/20 text-white"
+                         style="background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop') center/cover;">
+                        
+                        <!-- Top Postmark & Stamp -->
+                        <div class="flex justify-between items-start">
+                            <div class="bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-white/20 text-[10px] font-mono text-amber-300">
+                                📍 TAIMALI, TAITUNG 2026
+                            </div>
+                            <!-- Cute Postal Stamp -->
+                            <div class="w-10 h-12 bg-amber-500/90 border-2 border-dashed border-white rounded p-1 text-center flex flex-col items-center justify-center text-[9px] font-bold text-slate-950 shadow-md">
+                                <span>台東</span>
+                                <span class="text-xs">🌅</span>
+                                <span>60 NT</span>
+                            </div>
+                        </div>
+
+                        <!-- Postcard Main Message Text -->
+                        <div class="space-y-1 my-auto text-left">
+                            <p id="prevPcMessage" class="text-xs sm:text-sm font-medium leading-snug drop-shadow-md text-amber-100">
+                                當金黃光芒穿透雲層，太平洋與海岸線閃閃發光。願煩惱煙消雲散，珍視與家人的每一個美好瞬間！
+                            </p>
+                            <div class="text-[10px] text-slate-300 font-cute text-right">
+                                — <span id="prevPcAuthor">追光旅人</span> 筆
+                            </div>
+                        </div>
+
+                        <!-- Bottom Footer -->
+                        <div class="text-[9px] text-slate-300 font-mono tracking-widest flex justify-between border-t border-white/20 pt-1">
+                            <span>PACIFIC SUNRISE CAPSULE</span>
+                            <span>05:30 AM FIRST LIGHT</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                <button onclick="closePostcardModal()" class="px-5 py-2 rounded-full bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700">
+                    關閉
+                </button>
+                <button onclick="copyPostcardContent()" class="px-5 py-2 rounded-full bg-amber-500 text-slate-950 text-xs font-bold hover:bg-amber-400">
+                    📋 複製明信片文字
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 px-4 py-3 rounded-2xl bg-amber-500 text-slate-950 font-bold text-sm shadow-2xl flex items-center gap-2">
+        <span id="toastIcon">✨</span>
+        <span id="toastMsg">成功解鎖成就勳章！</span>
+    </div>
+
+
+    <!-- Footer -->
+    <footer class="w-full bg-[#070A14] border-t border-slate-800/80 py-10 px-4 text-center space-y-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+            <div class="flex items-center gap-2">
+                <span class="text-base">📸</span>
+                <span>資深前端工程師 × 人氣旅遊部落客 × 攝影指導 聯合製作</span>
+            </div>
+            <div>
+                © 2026 台東太麻里日出親情旅記. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- JavaScript Interactive Logic -->
+    <script>
+        /* -------------------------------------------------------------
+           1. Web Audio API Procedural Ocean Wave Synthesizer
+        ------------------------------------------------------------- */
+        let audioCtx = null;
+        let isPlayingAudio = false;
+        let noiseSource = null;
+        let filterNode = null;
+        let gainNode = null;
+        let waveTimer = null;
+
+        function toggleOceanWaveSound() {
+            if (!audioCtx) {
+                // Initialize Web Audio Context on user interaction
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if (isPlayingAudio) {
+                stopOceanWaves();
+            } else {
+                startOceanWaves();
+            }
+        }
+
+        function startOceanWaves() {
+            try {
+                // Create 3-second buffer of white noise
+                const bufferSize = audioCtx.sampleRate * 3;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                noiseSource = audioCtx.createBufferSource();
+                noiseSource.buffer = buffer;
+                noiseSource.loop = true;
+
+                // Lowpass filter to shape white noise into soft ocean ocean roar
+                filterNode = audioCtx.createBiquadFilter();
+                filterNode.type = 'lowpass';
+                filterNode.frequency.setValueAtTime(350, audioCtx.currentTime);
+
+                gainNode = audioCtx.createGain();
+                gainNode.gain.setValueAtTime(0.01, audioCtx.currentTime);
+
+                noiseSource.connect(filterNode);
+                filterNode.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                noiseSource.start();
+                isPlayingAudio = true;
+
+                // Modulate filter frequency & gain periodically to simulate wave cycles
+                function runWaveCycle() {
+                    if (!isPlayingAudio || !audioCtx) return;
+                    const now = audioCtx.currentTime;
+                    const cycleLength = 4.5 + Math.random() * 1.5; // ~5 sec per wave swell
+
+                    // Wave swell up
+                    filterNode.frequency.exponentialRampToValueAtTime(750 + Math.random() * 150, now + cycleLength * 0.45);
+                    gainNode.gain.linearRampToValueAtTime(0.16, now + cycleLength * 0.45);
+
+                    // Wave recede
+                    filterNode.frequency.exponentialRampToValueAtTime(220, now + cycleLength);
+                    gainNode.gain.linearRampToValueAtTime(0.02, now + cycleLength);
+
+                    waveTimer = setTimeout(runWaveCycle, cycleLength * 1000);
+                }
+
+                runWaveCycle();
+                updateAudioUI(true);
+                showToast("🌊 已開啟太平洋浪濤聲模擬", "🔊");
+
+                // Auto unlock ocean wave badge
+                unlockBadge('badge-3', true);
+            } catch (err) {
+                console.error("Audio Synthesis Error:", err);
+            }
+        }
+
+        function stopOceanWaves() {
+            isPlayingAudio = false;
+            if (waveTimer) clearTimeout(waveTimer);
+            if (gainNode && audioCtx) {
+                gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                setTimeout(() => {
+                    if (noiseSource) {
+                        noiseSource.stop();
+                        noiseSource.disconnect();
+                    }
+                }, 500);
+            }
+            updateAudioUI(false);
+            showToast("🔇 已暫停海浪聲音效", "⏸️");
+        }
+
+        function updateAudioUI(playing) {
+            const btnText = document.getElementById('audioText');
+            const waveIndicator = document.getElementById('audioWaveIndicator');
+            const audioBtn = document.getElementById('waveAudioBtn');
+
+            if (playing) {
+                btnText.textContent = "暫停浪濤聲";
+                waveIndicator.classList.remove('hidden');
+                audioBtn.classList.add('border-amber-400', 'bg-slate-800');
+            } else {
+                btnText.textContent = "播放太平洋浪濤聲";
+                waveIndicator.classList.add('hidden');
+                audioBtn.classList.remove('border-amber-400');
+            }
+        }
+
+
+        /* -------------------------------------------------------------
+           2. Interactive Sunrise Sky Simulator & Slider Logic
+        ------------------------------------------------------------- */
+        const skyStages = [
+            {
+                time: "03:00 AM",
+                badge: "🌌 漆黑與寂靜夜行",
+                bg: "linear-gradient(to bottom, #070A14 0%, #0F172A 60%, #1E293B 100%)",
+                sunY: "110px",
+                sunGlowColor: "rgba(255, 255, 255, 0.05)",
+                moonOpacity: "0.9",
+                starsOpacity: "1",
+                title: "03:00 AM - 黑夜中的期待與足跡",
+                tag: "手電筒尋光",
+                icon: "🔦",
+                text: "那天凌晨三點，四周還是一片漆黑與寂靜，我們帶著手電筒，頂著涼爽的夜風，一步步走向海岸線的觀景台。"
+            },
+            {
+                time: "04:15 AM",
+                badge: "🌊 屏息聆聽浪濤",
+                bg: "linear-gradient(to bottom, #1D2D44 0%, #3D5A80 60%, #1E293B 100%)",
+                sunY: "80px",
+                sunGlowColor: "rgba(116, 0, 184, 0.3)",
+                moonOpacity: "0.4",
+                starsOpacity: "0.5",
+                title: "04:15 AM - 靜佇海岸聽海浪",
+                tag: "規律沉穩海浪",
+                icon: "🌊",
+                text: "海浪拍打著沙灘，發出規律且沉穩的聲音。我們靜靜地佇立在海岸邊，屏息等待著那一刻。"
+            },
+            {
+                time: "05:00 AM",
+                badge: "🌅 海平線曙光漸變",
+                bg: "linear-gradient(to bottom, #2B1E3A 0%, #6930C3 35%, #F72585 70%, #FFB703 100%)",
+                sunY: "20px",
+                sunGlowColor: "rgba(247, 37, 133, 0.6)",
+                moonOpacity: "0",
+                starsOpacity: "0.1",
+                title: "05:00 AM - 紫紅與橙黃的天空調色盤",
+                tag: "微弱曙光出現",
+                icon: "🎨",
+                text: "大約到了五點，遠方的海平線開始出現一絲微弱的曙光，原本墨黑的天空漸漸渲染成深藍、紫紅，最後轉為耀眼的橙黃色。"
+            },
+            {
+                time: "05:30 AM",
+                badge: "✨ 金光穿雲耀太平洋",
+                bg: "linear-gradient(to bottom, #3A86FF 0%, #00B4D8 35%, #FFB703 70%, #FB8500 100%)",
+                sunY: "-50px",
+                sunGlowColor: "rgba(255, 183, 3, 0.9)",
+                moonOpacity: "0",
+                starsOpacity: "0",
+                title: "05:30 AM - 金黃光芒照亮太平洋與海岸線",
+                tag: "心靈震撼與親情",
+                icon: "☀️",
+                text: "當一道金黃色的光芒瞬間穿透雲層，整座太平洋與海岸線頓時被照得閃閃發光。那一刻的壯麗與寧靜，深深震撼了我的心靈，彷彿所有的煩惱與疲憊都在晨光中煙消雲散。"
+            }
+        ];
+
+        function onSliderChange(val) {
+            setSimTime(parseInt(val));
+        }
+
+        function setSimTime(index) {
+            const data = skyStages[index];
+            document.getElementById('timeSlider').value = index;
+
+            // Update Sky Canvas
+            const skyBox = document.getElementById('skyCanvasBox');
+            skyBox.style.background = data.bg;
+
+            document.getElementById('skyTimeDisplay').textContent = data.time;
+            document.getElementById('skyStageBadge').textContent = data.badge;
+
+            // Animate Sun Position
+            const sunContainer = document.getElementById('sunContainer');
+            sunContainer.style.bottom = data.sunY;
+
+            document.getElementById('sunGlow').style.backgroundColor = data.sunGlowColor;
+
+            // Moon & Stars Opacity
+            document.getElementById('moonElem').style.opacity = data.moonOpacity;
+            document.getElementById('starsLayer').style.opacity = data.starsOpacity;
+
+            // Narrative Update with Fade Effect
+            const narrativeBox = document.getElementById('simulatorNarrative');
+            narrativeBox.style.opacity = '0.4';
+            setTimeout(() => {
+                document.getElementById('narrativeTitle').textContent = data.title;
+                document.getElementById('narrativeTag').textContent = data.tag;
+                document.getElementById('narrativeText').textContent = data.text;
+                document.getElementById('narrativeIcon').textContent = data.icon;
+                narrativeBox.style.opacity = '1';
+            }, 200);
+
+            // Unlock 03:00 AM badge if step 0 is viewed
+            if (index === 0) unlockBadge('badge-2', true);
+        }
+
+
+        /* -------------------------------------------------------------
+           3. Badge Unlocking System & Heart Likes Counter
+        ------------------------------------------------------------- */
+        const unlockedBadges = new Set();
+
+        function unlockBadge(badgeId, silent = false) {
+            if (unlockedBadges.has(badgeId)) return;
+            unlockedBadges.add(badgeId);
+
+            const badgeElem = document.getElementById(badgeId);
+            if (!badgeElem) return;
+
+            badgeElem.classList.add('border-amber-400', 'bg-amber-500/10', 'badge-unlock-anim');
+            const statusSpan = badgeElem.querySelector('.badge-status');
+            if (statusSpan) {
+                statusSpan.textContent = "✓ 已獲得成就";
+                statusSpan.className = "badge-status inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950 font-bold font-mono";
+            }
+
+            if (!silent) {
+                showToast(`🎉 成功解鎖：${badgeElem.querySelector('h5').textContent}`, "🏅");
+            }
+        }
+
+        let likeCount = 128;
+        function triggerHeartLike() {
+            likeCount++;
+            document.getElementById('likeCount').textContent = likeCount;
+            const heart = document.getElementById('heartIcon');
+            heart.classList.add('scale-150');
+            setTimeout(() => heart.classList.remove('scale-150'), 200);
+
+            showToast("❤️ 感謝你給太麻里曙光旅記的愛心！", "✨");
+            unlockBadge('badge-4', true);
+        }
+
+
+        /* -------------------------------------------------------------
+           4. Postcard Generator Modal Logic
+        ------------------------------------------------------------- */
+        const postcardThemes = {
+            golden: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop",
+            dawn: "https://images.unsplash.com/photo-1495954484750-af469f2f9be5?q=80&w=1600&auto=format&fit=crop",
+            night: "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop"
+        };
+
+        function openPostcardModal() {
+            document.getElementById('postcardModal').classList.remove('hidden');
+            updatePostcardPreview();
+        }
+
+        function closePostcardModal() {
+            document.getElementById('postcardModal').classList.add('hidden');
+        }
+
+        function updatePostcardPreview() {
+            const author = document.getElementById('pcAuthor').value || "追光旅人";
+            const message = document.getElementById('pcMessage').value || "曙光渲染天空，太平洋閃閃發光！";
+            const themeKey = document.getElementById('pcTheme').value;
+
+            document.getElementById('prevPcAuthor').textContent = author;
+            document.getElementById('prevPcMessage').textContent = message;
+
+            const bgUrl = postcardThemes[themeKey] || postcardThemes.golden;
+            const renderArea = document.getElementById('postcardRenderArea');
+            renderArea.style.background = `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.75)), url('${bgUrl}') center/cover`;
+        }
+
+        function copyPostcardContent() {
+            const author = document.getElementById('pcAuthor').value;
+            const message = document.getElementById('pcMessage').value;
+            const copyText = `【太麻里曙光明信片】\n"${message}" — ${author} 筆於台東太麻里海岸線`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(copyText);
+            } else {
+                // Fallback for document.execCommand
+                const dummy = document.createElement("textarea");
+                document.body.appendChild(dummy);
+                dummy.value = copyText;
+                dummy.select();
+                document.execCommand("copy");
+                document.body.removeChild(dummy);
+            }
+
+            showToast("📋 已複製明信片內文至剪貼簿！", "✉️");
+            closePostcardModal();
+        }
+
+
+        /* -------------------------------------------------------------
+           5. Toast Notification System
+        ------------------------------------------------------------- */
+        let toastTimer = null;
+        function showToast(msg, icon = "✨") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            document.getElementById('toastIcon').textContent = icon;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Auto unlock badge 1 on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                unlockBadge('badge-1', true);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
