@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猜拳遊戲：搶五勝大賽 (種族大戰版)</title>
+    <style>
+        body { font-family: '微軟正黑體', sans-serif; background-color: #1a1a2e; color: #e94560; text-align: center; margin: 0; padding: 20px; }
+        #game-container { max-width: 800px; margin: 0 auto; background-color: #16213e; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h1 { color: #0f3460; text-shadow: 2px 2px 4px #000; color: #fff; }
+        .section { margin-bottom: 20px; text-align: left; background: #0f3460; padding: 15px; border-radius: 8px; color: #fff; }
+        select, input, button { padding: 10px; margin: 5px; border-radius: 5px; border: none; font-size: 16px; font-family: '微軟正黑體', sans-serif;}
+        select, input { width: 80%; max-width: 300px; }
+        button { background-color: #e94560; color: white; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        button:hover { background-color: #ff2e63; transform: scale(1.05); }
+        #battle-log { height: 300px; overflow-y: auto; background-color: #000; color: #fff; padding: 15px; border-radius: 5px; font-family: monospace; margin-top: 20px; line-height: 1.5; text-align: left; }
+        .status-board { display: flex; justify-content: space-between; font-size: 1.2em; font-weight: bold; margin: 15px 0; padding: 10px; background: #e94560; color: white; border-radius: 5px; }
+        .hidden { display: none; }
+        .effect { animation: flash 0.5s; }
+        @keyframes flash { 0% { background-color: #fff; } 100% { background-color: #16213e; } }
+        .choices { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .choices button { font-size: 24px; padding: 15px 30px; margin: 10px; background-color: #0f3460; border: 2px solid #4361ee; border-radius: 10px; }
+        .choices button:hover { background-color: #4361ee; box-shadow: 0 0 10px #4361ee; }
+        #restart-btn { font-size: 20px; padding: 15px 40px; margin-top: 20px; background-color: #4361ee; }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>⚔️ 猜拳大戰 RPG ⚔️</h1>
+        
+        <!-- Setup Screen -->
+        <div id="setup-screen">
+            <div class="section">
+                <label>角色名稱：</label><br>
+                <input type="text" id="player-name" value="勇者">
+            </div>
+            
+            <div class="section">
+                <label>選擇種族：</label><br>
+                <select id="race-choice"></select>
+            </div>
+            
+            <div class="section">
+                <label>選擇職業：</label><br>
+                <select id="class-choice"></select>
+            </div>
+            
+            <div class="section">
+                <label>選擇挑戰的 Boss：</label><br>
+                <select id="boss-choice"></select>
+            </div>
+            
+            <div class="section">
+                <label>選擇裝備 (最多選兩件，矮人可選三件)：</label><br>
+                <select id="eq1"></select><br>
+                <select id="eq2"></select><br>
+                <select id="eq3" class="hidden"></select>
+            </div>
+            
+            <button onclick="startGame()" style="font-size: 20px; padding: 10px 40px;">開始冒險！</button>
+        </div>
+
+        <!-- Battle Screen -->
+        <div id="battle-screen" class="hidden">
+            <div class="status-board">
+                <span id="player-status">玩家: 0/5</span>
+                <span id="round-info">第 1 回合</span>
+                <span id="boss-status">Boss: 0/5</span>
+            </div>
+            
+            <div class="choices">
+                <button onclick="playRound('剪刀')">✌️ 剪刀</button>
+                <button onclick="playRound('石頭')">✊ 石頭</button>
+                <button onclick="playRound('布')">🖐️ 布</button>
+            </div>
+            
+            <div id="battle-log"></div>
+            <button id="restart-btn" class="hidden" onclick="location.reload()">重新開始</button>
+        </div>
+    </div>
+
+    <script>
+        // 音效生成器 (Web Audio API) - 無需外部檔案
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        function playSound(type) {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            if (type === 'win') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'lose') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'skill') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        const PLAYER_RACES = {
+            "1": {name: "人類", skill: "潛力激發", desc: "每3回合隨機恢復一件已裝備道具1次使用次數"},
+            "2": {name: "精靈", skill: "靈敏直覺", desc: "出拳前有15%機率自動變成剋制對手的手勢"},
+            "3": {name: "獸人", skill: "狂戰士", desc: "Boss聽牌時，若平手，獸人直接+1勝"},
+            "4": {name: "不死族", skill: "亡魂復甦", desc: "單局限1次，Boss達勝利目標時，扣Boss 1勝並給自己1勝"},
+            "5": {name: "矮人", skill: "鍛造宗師", desc: "開局可額外選擇第三件裝備"},
+            "6": {name: "惡魔", skill: "嗜血契約", desc: "獲勝時50%獲雙倍勝場，50%勝利無效"},
+            "7": {name: "天使", skill: "神聖庇護", desc: "戰敗時25%機率免疫該回合失敗"},
+            "8": {name: "史萊姆", skill: "黏液分裂", desc: "獲勝時30%機率額外+1勝"},
+            "9": {name: "龍族", skill: "古龍威懾", desc: "開局自帶2勝，但雙方最終勝利目標同+2"},
+            "10": {name: "哥布林", skill: "貪婪掠奪", desc: "獲勝時25%機率直接扣Boss 1勝"}
+        };
+
+        const PLAYER_CLASSES = {
+            "1": {name: "無賴使者", skill: "無賴學徒", desc: "15%機率慢出(根據對手強制變招獲勝)"},
+            "2": {name: "時間掌管者", skill: "時間倒流", desc: "猜拳失敗時30%機率倒退時間"},
+            "3": {name: "戰士", skill: "鋼鐵軀體", desc: "開局1次失敗抵免；獲勝30%雙倍傷害"}
+        };
+
+        const BOSS_LIST = {
+            "1": {name: "吳俊賢", title: "無賴之王", skill: "無賴遊戲", hp: 5},
+            "2": {name: "小零食", title: "零食大魔王", skill: "大零食型態", hp: 5},
+            "3": {name: "影之刺客", title: "暗夜收割者", skill: "靈魂竊取", hp: 5},
+            "4": {name: "命運賭徒", title: "生死莊家", skill: "生死輪盤", hp: 5},
+            "5": {name: "機械暴龍", title: "鋼鐵巨獸", skill: "核心超載", hp: 5},
+            "6": {name: "時空破壞者", title: "維度吞噬者", skill: "時空枷鎖", hp: 5},
+            "7": {name: "幻象大師", title: "拷貝忍者", skill: "完全複製", hp: 5}
+        };
+
+        const PLAYER_EQUIPMENTS = {
+            "1": {name: "讀心水晶", desc: "100%看穿電腦出拳", uses: 1},
+            "2": {name: "逆轉聖盾", desc: "輸掉的回合強行轉為平手", uses: 1},
+            "3": {name: "連爆手套", desc: "獲勝自己+2勝，扣電腦1勝", uses: 1},
+            "4": {name: "吳俊賢的庇護", desc: "平/勝/敗有20%機率觸發效果", uses: 999},
+            "5": {name: "無限手套", desc: "失敗時免死一次並有機會反擊(網頁簡化版)", uses: 2}
+        };
+
+        function populateSelects() {
+            const addOptions = (obj, selectId) => {
+                const sel = document.getElementById(selectId);
+                for (let key in obj) {
+                    let opt = document.createElement("option");
+                    opt.value = key;
+                    opt.text = `[${key}] ${obj[key].name || obj[key].title} - ${obj[key].desc || obj[key].skill}`;
+                    sel.add(opt);
+                }
+            };
+            addOptions(PLAYER_RACES, "race-choice");
+            addOptions(PLAYER_CLASSES, "class-choice");
+            addOptions(BOSS_LIST, "boss-choice");
+            addOptions(PLAYER_EQUIPMENTS, "eq1");
+            addOptions(PLAYER_EQUIPMENTS, "eq2");
+            addOptions(PLAYER_EQUIPMENTS, "eq3");
+            
+            let noneOpt = document.createElement("option"); noneOpt.value = "0"; noneOpt.text = "無";
+            document.getElementById("eq3").add(noneOpt);
+            document.getElementById("eq3").value = "0";
+            
+            document.getElementById("race-choice").addEventListener("change", function() {
+                document.getElementById("eq3").classList.toggle("hidden", this.value !== "5");
+            });
+        }
+
+        window.onload = populateSelects;
+
+        let state = {};
+
+        function log(msg, color="white") {
+            const el = document.getElementById("battle-log");
+            el.innerHTML += `<div style="color:${color}; margin-bottom: 5px;">${msg}</div>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function startGame() {
+            initAudio(); // 初始化音頻
+            state.player = document.getElementById("player-name").value || "勇者";
+            state.race = document.getElementById("race-choice").value;
+            state.cls = document.getElementById("class-choice").value;
+            state.bossId = document.getElementById("boss-choice").value;
+            state.boss = BOSS_LIST[state.bossId].name;
+            
+            state.inventory = {};
+            let eqs = [document.getElementById("eq1").value, document.getElementById("eq2").value];
+            if (state.race === "5") eqs.push(document.getElementById("eq3").value);
+            
+            eqs.forEach(eq => {
+                if (PLAYER_EQUIPMENTS[eq]) {
+                    state.inventory[eq] = (state.inventory[eq] || 0) + PLAYER_EQUIPMENTS[eq].uses;
+                }
+            });
+
+            state.pWins = state.race === "9" ? 2 : 0;
+            state.cWins = 0;
+            state.target = state.race === "9" ? 7 : 5;
+            state.round = 1;
+            
+            state.undeadRevive = false;
+            state.warriorShield = state.cls === "3" ? 1 : 0;
+            state.compNirvana = 1;
+            state.compHasShield = false;
+            state.snackShield = state.bossId === "2" ? Math.floor(Math.random()*3)+2 : 0;
+            state.bigSnack = false;
+            state.mechaShield = state.bossId === "5" ? 3 : 0;
+            state.gameOver = false;
+
+            document.getElementById("setup-screen").classList.add("hidden");
+            document.getElementById("battle-screen").classList.remove("hidden");
+            document.getElementById("game-container").classList.add("effect");
+            setTimeout(()=>document.getElementById("game-container").classList.remove("effect"), 500);
+
+            log(`⚔️ 戰鬥開始！ 目標 ${state.target} 勝！`, "#00ffcc");
+            if (state.race === "9") log("🐉 龍族降臨！自帶2勝，目標提高！", "#ff9900");
+            updateBoard();
+            
+            checkPreRound();
+        }
+
+        function updateBoard() {
+            let bossExt = "";
+            if(state.bossId==="1" && state.compHasShield) bossExt=" 🛡️護盾";
+            if(state.bossId==="2" && state.snackShield>0) bossExt=` 🍪護盾:${state.snackShield}`;
+            if(state.bossId==="5") bossExt = state.mechaShield>0 ? ` 🛡️絕對防禦:${state.mechaShield}` : " 🔴超載!";
+            
+            let pExt = state.warriorShield>0 ? ` ❤️戰甲:${state.warriorShield}` : "";
+            
+            document.getElementById("player-status").innerText = `${state.player}: ${state.pWins}/${state.target} ${pExt}`;
+            document.getElementById("boss-status").innerText = `${state.boss}: ${state.cWins}/${state.target} ${bossExt}`;
+            document.getElementById("round-info").innerText = `第 ${state.round} 回合`;
+        }
+
+        function checkPreRound() {
+            if (state.race === "1" && state.round > 1 && (state.round - 1) % 3 === 0) {
+                let active = Object.keys(state.inventory);
+                if (active.length > 0) {
+                    let rItem = active[Math.floor(Math.random()*active.length)];
+                    state.inventory[rItem]++;
+                    log(`🌱 [人類] 潛力激發！裝備 ${PLAYER_EQUIPMENTS[rItem].name} 次數+1！`, "#00ff00");
+                    playSound('skill');
+                }
+            }
+            if (state.inventory["1"] && state.inventory["1"] > 0) {
+                state.predict = ["剪刀","石頭","布"][Math.floor(Math.random()*3)];
+                state.inventory["1"]--;
+                log(`🔮 [讀心水晶] 預測 Boss 將出：${state.predict} (剩 ${state.inventory["1"]}次)`, "#cc99ff");
+            } else {
+                state.predict = null;
+            }
+        }
+
+        function playRound(pChoice) {
+            if(state.gameOver) return;
+            log(`
+--- 第 ${state.round} 回合 ---`, "#f39c12");
+            
+            let cChoice = state.predict || ["剪刀","石頭","布"][Math.floor(Math.random()*3)];
+            
+            if (state.race === "2" && Math.random() < 0.15) {
+                log("🧝 [精靈] 靈敏直覺！自動剋制對手！", "#00ff00");
+                if (cChoice==="剪刀") pChoice="石頭"; else if(cChoice==="石頭") pChoice="布"; else pChoice="剪刀";
+                playSound('skill');
+            }
+            
+            if (state.cls === "1" && Math.random() < 0.15) {
+                log("😎 [無賴] 慢出看穿手勢！", "#00ff00");
+                if (cChoice==="剪刀") pChoice="石頭"; else if(cChoice==="石頭") pChoice="布"; else pChoice="剪刀";
+                playSound('skill');
+            }
+            
+            if (state.bossId === "1" && Math.random() < 0.35) {
+                log(`👀 [Boss] ${state.boss} 慢出看穿了你！`, "#ff3333");
+                if (pChoice==="剪刀") cChoice="石頭"; else if(pChoice==="石頭") cChoice="布"; else cChoice="剪刀";
+            }
+            
+            if (state.bossId === "7" && Math.random() < 0.25) {
+                log(`🌫️ [Boss] ${state.boss} 完全複製！`, "#aaaaaa");
+                cChoice = pChoice;
+                let active = Object.keys(state.inventory).filter(k => state.inventory[k] > 0);
+                if (active.length > 0) {
+                    let rItem = active[Math.floor(Math.random()*active.length)];
+                    state.inventory[rItem]--;
+                    log(`⚠️ 你的裝備 ${PLAYER_EQUIPMENTS[rItem].name} 被破壞1次！`, "#ff5555");
+                }
+            }
+            
+            log(`👉 最終出拳：你 [${pChoice}] vs Boss [${cChoice}]`);
+            resolve(pChoice, cChoice);
+        }
+
+        function resolve(p, c) {
+            let pPrev = state.pWins, cPrev = state.cWins;
+            
+            if (p === c) {
+                if (state.race === "3" && state.cWins === state.target - 1) {
+                    state.pWins++; log("🪓 [獸人] 狂戰士！聽牌平手強制獲勝！", "#00ff00"); playSound('skill');
+                } else if (state.bossId === "4") {
+                    log("🎲 [Boss] 生死輪盤！", "#ff9900");
+                    if (Math.random() < 0.5) { state.pWins+=2; log("🎉 賭贏了！+2勝！", "#00ff00"); playSound('win'); }
+                    else { state.cWins+=2; log("💀 賭輸了！Boss +2勝！", "#ff3333"); playSound('lose'); }
+                } else if (state.inventory["4"] && Math.random() < 0.2) {
+                    state.pWins++; state.cWins = Math.max(0, state.cWins-1);
+                    log("🌟 [吳俊賢的庇護] 平手反擊！對手扣1勝，自己+1勝！", "#ffff00"); playSound('skill');
+                } else {
+                    log("🟰 結果：平手！");
+                }
+            } 
+            else if ((p==="剪刀"&&c==="布") || (p==="石頭"&&c==="剪刀") || (p==="布"&&c==="石頭")) {
+                let blocked = false;
+                if (state.bossId==="1" && state.compHasShield) {
+                    if(Math.random()<0.3) { log(`🛡️ ${state.boss} 護盾抵禦傷害！`, "#aaddff"); blocked=true; }
+                    state.compHasShield = false;
+                } else if (state.bossId==="2" && state.snackShield>0) {
+                    log(`🍪 零食抵禦了傷害！`, "#ddaa77"); state.snackShield--; blocked=true;
+                } else if (state.bossId==="5" && state.mechaShield>0) {
+                    log(`🛡️ 絕對防禦吸收傷害！`, "#aaddff"); state.mechaShield--; blocked=true;
+                    if(state.mechaShield===0) log("🚨 Boss 進入超載模式！", "#ff0000");
+                } else if (state.bossId==="3" && !blocked && Math.random()<0.3) {
+                    log(`👻 Boss 閃避並偷走你1勝！`, "#ff5555");
+                    state.pWins = Math.max(0, state.pWins-1); state.cWins++; blocked=true; playSound('lose');
+                }
+                
+                if (!blocked) {
+                    let gains = 1;
+                    if (state.inventory["3"] && state.inventory["3"]>0) {
+                        state.inventory["3"]--; gains=2; state.cWins=Math.max(0, state.cWins-1);
+                        log(`💥 [連爆手套] 扣敵1勝！自己+2！`, "#ff9900"); playSound('skill');
+                    } else if (state.inventory["4"] && Math.random()<0.2) {
+                        gains = state.pWins + 1; state.cWins = Math.floor(state.cWins/2);
+                        log(`🌟 [庇護] 對手勝場砍半！`, "#ffff00"); playSound('skill');
+                    } else if (state.cls==="3" && Math.random()<0.3) {
+                        gains=2; log(`⚔️ [戰士] 雙倍傷害！`, "#ff0000"); playSound('skill');
+                    }
+                    
+                    if (state.race==="6") {
+                        if (Math.random()<0.5) { gains*=2; log(`😈 [惡魔] 嗜血成功！勝場翻倍！`, "#ff0000"); playSound('skill'); }
+                        else { gains=0; log(`🩸 [惡魔] 嗜血反噬！勝利無效！`, "#ffaaaa"); }
+                    }
+                    
+                    if (state.race==="8" && gains>0 && Math.random()<0.3) {
+                        gains++; log(`💧 [史萊姆] 黏液分裂額外+1勝！`, "#00ffff"); playSound('skill');
+                    }
+                    if (state.race==="10" && gains>0 && state.cWins>0 && Math.random()<0.25) {
+                        state.cWins--; log(`💰 [哥布林] 拔掉 Boss 1勝！`, "#00ff00"); playSound('skill');
+                    }
+                    
+                    state.pWins += gains;
+                    if(gains>0) { log(`✅ 你贏了！獲得 ${gains} 勝。`, "#00ff00"); playSound('win'); }
+                    
+                    if (state.bossId==="1" && state.compNirvana>0 && state.pWins>=state.target) {
+                        state.compNirvana--; state.pWins--; log(`⚔️ Boss 鎖血一擊！擋住了你的絕殺！`, "#ff0000");
+                    }
+                }
+                
+                if (state.bossId==="2" && !state.bigSnack && Math.random()<0.5) {
+                    log(`🚨 暴走大零食！目標變10勝！`, "#ff5555");
+                    state.pWins=0; state.cWins=0; state.target=10; state.snackShield=6; state.bigSnack=true;
+                }
+            } 
+            else {
+                let timeRev = false;
+                if (state.cls==="2" && Math.random()<0.3) {
+                    log(`⏳ [時間倒流] 分數回歸！`, "#00ffff");
+                    state.pWins=pPrev; state.cWins=cPrev; timeRev=true; playSound('skill');
+                }
+                if (!timeRev) {
+                    if (state.race==="7" && Math.random()<0.25) {
+                        log("👼 [天使] 神聖庇護！免疫失敗！", "#ffffaa"); playSound('skill');
+                    } else if (state.warriorShield>0) {
+                        state.warriorShield--; log("🛡️ [戰甲] 消耗護甲抵免失敗！", "#aaaaaa");
+                    } else if (state.inventory["2"] && state.inventory["2"]>0) {
+                        state.inventory["2"]--; log("🛡️ [逆轉聖盾] 強制平手！", "#ffffaa");
+                    } else if (state.inventory["5"] && state.inventory["5"]>0) {
+                        state.inventory["5"]--; state.pWins++; log("✊ [無限手套] 逆轉戰局！免死並反送1勝！", "#ffaa00"); playSound('skill');
+                    } else if (state.inventory["4"] && Math.random()<0.2) {
+                        state.cWins = Math.max(0, state.cWins-1); log("🌟 [庇護] 反扣對手1勝！", "#ffff00");
+                    } else {
+                        if (state.bossId==="1" && Math.random()<0.25) {
+                            state.cWins+=2; log("🗡️ 聖劍雙倍傷害！Boss+2勝", "#ff5555"); playSound('lose');
+                        } else if (state.bossId==="5" && state.mechaShield===0) {
+                            state.cWins+=2; log("🔴 超載巨額傷害！Boss+2勝", "#ff0000"); playSound('lose');
+                        } else {
+                            state.cWins++; log("❌ 你輸了！Boss+1勝", "#ff5555"); playSound('lose');
+                        }
+                        
+                        if (state.bossId==="1" && !state.compHasShield) {
+                            state.compHasShield=true; log("✨ Boss 獲得護盾！", "#aaddff");
+                        }
+                        if (state.bossId==="6" && Math.random()<0.3) {
+                            state.target++; log(`⏳ [時空枷鎖] 目標提高至 ${state.target}勝！`, "#ffaaaa");
+                        }
+                    }
+                }
+            }
+            
+            if (state.race==="4" && state.cWins>=state.target && !state.undeadRevive) {
+                log("☠️ [不死族] 亡魂復甦！強拉 Boss 陪葬，偷1勝！", "#aa00ff");
+                state.cWins--; state.pWins++; state.undeadRevive=true; playSound('skill');
+            }
+            
+            state.round++;
+            updateBoard();
+            
+            if (state.pWins >= state.target || state.cWins >= state.target) {
+                state.gameOver = true;
+                document.querySelector('.choices').classList.add('hidden');
+                document.getElementById('restart-btn').classList.remove('hidden');
+                if (state.pWins >= state.target) {
+                    log(`
+🎉 恭喜！你擊敗了 ${state.boss}！`, "#00ff00");
+                    setTimeout(() => { playSound('win'); setTimeout(()=>playSound('win'), 200) }, 500);
+                } else {
+                    log(`
+💀 挑戰失敗！${state.boss} 將你擊垮。`, "#ff0000");
+                    setTimeout(() => { playSound('lose'); setTimeout(()=>playSound('lose'), 300) }, 500);
+                }
+            } else {
+                checkPreRound();
+            }
+        }
+    </script>
+</body>
+</html>
